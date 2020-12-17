@@ -69,7 +69,26 @@ dfna$Debt_to_income_ratio<-ifelse(dfna$denial_reason_name_1 =='Debt-to-income ra
 dfna$Credit_History<-ifelse(dfna$denial_reason_name_1=='Credit history ',1,0)
 dfna$Credit_app_incomplete<-ifelse(dfna$denial_reason_name_1 == 'Credit application incomplete',1,0)                             
 
-summary(dfna$county_name)
+dfna$White_Hispanic <- ifelse(dfna$Merged_Race_Ethnicity=='White Hispanic or Latino',1,0 )
+dfna$White_Not_Hispanic <- ifelse(dfna$Merged_Race_Ethnicity=='White Not Hispanic or Latino',1,0)
+dfna$Black_Not_Hispanic <-ifelse(dfna$Merged_Race_Ethnicity=='Black or African American Not Hispanic or Latino',1,0)
+dfna$Black_Hispanic<-ifelse(dfna$Merged_Race_Ethnicity=='Black or African American Hispanic or Latino',1,0)
+
+
+
+dfna$Merged_Race_Ethnicity <- paste(dfna$applicant_race_name_1,dfna$applicant_ethnicity_name)
+
+
+categories <- unique(dfna$Merged_Race_Ethnicity) 
+numberOfCategories <- length(categories)
+table(categories)
+
+dfna$Hispanic_or_Latino2 <- ifelse(dfna$co_applicant_ethnicity_name == 'Hispanic or Latino', 1, 0)
+dfna$Not_Hispanic_or_Latino2<- ifelse(dfna$co_applicant_ethnicity_name == 'Not Hispanic or Latino', 1, 0)
+dfna$Male2<-ifelse(dfna$co_applicant_sex_name =='Male',1,0)
+dfna$Female2<-ifelse(dfna$co_applicant_sex_name =='Female',1,0)
+
+
 
 install.packages("knitr")
 library(knitr)
@@ -83,7 +102,27 @@ t1<-addmargins(approvedtable)
 t2<-prop.table(loanapprovedtable)
 kables(list(kable(t1,align="l",col.name=c("Approved","Total")),kable(t2,col.names = c("Approved","Proportion"))))
 
+y<-lm(Loan_Approved~White_Hispanic+Black_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y)
 
+
+y2<-lm(Loan_Approved~White_Hispanic+White_Not_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y2)
+
+y3<-lm(Loan_Approved~Black_Hispanic+Black_Not_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y3)
+
+y4<-lm(Loan_Approved~Black_Not_Hispanic+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y4)
+
+library(stargazer)
+stargazer(y)
+
+
+
+linearHypothesis(x,matchCoefs(x,"county_name"))
+linearHypothesis(x,c("Black=0","county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFulton County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
+linearHypothesis(x,c("Black")) 
 
 require(standardize)
 set.seed(654321)
@@ -108,14 +147,10 @@ pred1OLStable <- table(pred = pred_model_OLS1, true = dat_test$Loan_Approved)
 pred1OLStable
 goodolspred <- sum((prop.table(pred1OLStable)[1,1])+(prop.table(pred1OLStable)[2,2]))
 goodolspred
+plot(linear)
 
 
-x<-lm(Loan_Approved~Black+ Asian + American_Indian_or_Alaska_Native + White + Male + Female + Hispanic_or_Latino + applicant_income_000s +loan_purpose_name +county_name + minority_population,data=dfna)
 
-
-linearHypothesis(x,matchCoefs(x,"county_name"))
-linearHypothesis(x,c("Black=0","county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFulton County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-linearHypothesis(x,c("Black"))
 
 
 logit <- glm(sobj$formula, family = binomial, data = sobj$data)
@@ -126,6 +161,7 @@ pred1Logtable <- table(pred = pred_model_logit1, true = dat_test$Loan_Approved)
 pred1Logtable
 goodlogpred <- sum((prop.table(pred1Logtable)[1,1])+(prop.table(pred1Logtable)[2,2]))
 goodlogpred
+plot(logit)
 
 probit <- glm(sobj$formula, family = binomial (link='probit'), data = sobj$data)
 summary(probit)
@@ -135,37 +171,23 @@ pred1Logtable2 <- table(pred = pred_model_probit1, true = dat_test$Loan_Approved
 pred1Logtable2
 goodlogpred2 <- sum((prop.table(pred1Logtable2)[1,1])+(prop.table(pred1Logtable2)[2,2]))
 goodlogpred2
+plot(probit)
 
 
 
 
+NNobs <- length(Loan_Approved)
+set.seed(12345)
+graph_obs <- (runif(NNobs) < 0.1)
+dat_graph <-subset(dfna,graph_obs)  
+plot(Loan_Approved ~ jitter(app ,pch = 16, col = rgb(0.5, 0.5, 0.5, alpha = 0.2), ylim = c(0,150000), data = dat_graph))
+to_be_predicted1 <- data.frame(Black=1,Asian=0, American_Indian_or_Alaska_Native=0, White=0,Male=0,Female=1,Hispanic_or_Latino=0, applicant_income_000s=0, loan_purpose_name=0, county_name=0,minority_population=0 )
+to_be_predicted1$yhat <- predict(model_temp1, newdata = to_be_predicted1)
+lines(yhat ~ applicant_income_000s, data = to_be_predicted1)
 
 
 
 
-
-
-
-
-
-require('randomForest')
-set.seed(54321)
-model_randFor <- randomForest(Loan_Approved ~ ., data = sobj$data, importance=TRUE, proximity=TRUE)
-print(model_randFor)
-round(importance(model_randFor),2)
-varImpPlot(model_randFor)
-
-pred_model1 <- predict(model_randFor,  s_dat_test)
-RFpredtable1 <- table(pred = pred_model, true = dat_test$Loan_Approved)
-RFpredtable1
-
-
-
-RFproppred1 <- prop.table(RFpredtable1)
-RFgoodpred1 <- sum((RFproppred1[1,1])+(RFproppred1[2,2]))
-RFgoodpred1
-RFfalsepos1 <- RFproppred1[2,1]
-RFfalseneg1 <- RFproppred1[1,2]
 
 
 
