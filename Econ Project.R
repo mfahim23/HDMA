@@ -193,7 +193,7 @@ pred1OLStable <- table(pred = pred_model_OLS1, true = dat_test$Loan_Approved)
 pred1OLStable
 goodolspred <- sum((prop.table(pred1OLStable)[1,1])+(prop.table(pred1OLStable)[2,2]))
 goodolspred
-plot(linear)
+
 
 
 logit <- glm(sobj$formula, family = binomial, data = sobj$data)
@@ -204,7 +204,7 @@ pred1Logtable <- table(pred = pred_model_logit1, true = dat_test$Loan_Approved)
 pred1Logtable
 goodlogpred <- sum((prop.table(pred1Logtable)[1,1])+(prop.table(pred1Logtable)[2,2]))
 goodlogpred
-plot(logit)
+
 
 probit <- glm(sobj$formula, family = binomial (link='probit'), data = sobj$data)
 summary(probit)
@@ -214,5 +214,5 @@ pred1Logtable2 <- table(pred = pred_model_probit1, true = dat_test$Loan_Approved
 pred1Logtable2
 goodlogpred2 <- sum((prop.table(pred1Logtable2)[1,1])+(prop.table(pred1Logtable2)[2,2]))
 goodlogpred2
-plot(probit)
+
 
