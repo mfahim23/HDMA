@@ -1,18 +1,20 @@
-df <- data.frame(hmda_2017_ny_all.records_labels)
+getwd()
+setwd("/Users/mirajulfahim/Downloads/ecob2000_lecture1/Econometrics Project")
 
-attach(df)
+library(foreign)
+x<-read.csv("/Users/mirajulfahim/Downloads/hmda_2017_ny_all-records_labels.csv")
 
-dat2 <- df[-c(1,4,5,7,9,11,13,16,18,21:23,26,28,30,32:40,42:50,52,54,57,59:64,66,68:71,78)]
-dat2
-View(dat2)
 
-detach(df)
+
+dat2 <- x[-c(1,4,5,7,9,11,13,16,18,21:23,26,28,30,32:40,42:50,52,54,57,59:64,66,68:71,78)]
 
 dat3<- subset(dat2, select =c(property_type_name, loan_purpose_name, owner_occupancy_name ,loan_amount_000s, preapproval_name, action_taken_name, msamd_name, county_name, applicant_ethnicity_name, co_applicant_ethnicity_name, applicant_race_name_1,applicant_race_name_1, applicant_sex_name, co_applicant_sex_name, applicant_income_000s, purchaser_type_name, denial_reason_name_1 , hoepa_status_name, lien_status_name ,population, minority_population ,hud_median_family_income , number_of_owner_occupied_units, number_of_1_to_4_family_units))
 
 dfna <- dat3[ , c("property_type_name", "loan_purpose_name", "owner_occupancy_name" ,"loan_amount_000s", "preapproval_name", "action_taken_name", "msamd_name", "county_name", "applicant_ethnicity_name", "co_applicant_ethnicity_name", "applicant_race_name_1","applicant_race_name_1", "applicant_sex_name", "co_applicant_sex_name", "applicant_income_000s", "purchaser_type_name", "denial_reason_name_1" , "hoepa_status_name", "lien_status_name" ,"population", "minority_population" ,"hud_median_family_income" , "number_of_owner_occupied_units", "number_of_1_to_4_family_units")] 
 dfna <- dat3[complete.cases(dat3), ] # Omit NAs by columns
-dfna
+dfna  
+
+save(dfna,file="HDMA2017.Rdata")
 
 attach(dfna)
 
@@ -27,7 +29,7 @@ boxplot(dfna$applicant_income_000s)$out
 # Now you can assign the outliers values into a vector
 outliers<-boxplot(dfna$applicant_income_000s,plot=FALSE)$out
 # Check the results
-print(outliers)
+#print(outliers)
 # First you need find in which rows the outliers are
 dfna[which(dfna$applicant_income_000s %in% outliers),]
 # Now you can remove the rows containing the outliers, one possible option is:
@@ -90,35 +92,43 @@ kables(list(kable(t1,align="l",col.name=c("Approved","Total")),kable(t2,col.name
 y<-lm(Loan_Approved~White_Hispanic+Black_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
 library(stargazer)
 stargazer(y,type="text")
+summary(y)
 plot(y)
 
 y2<-lm(Loan_Approved~White_Hispanic+White_Not_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
 stargazer(y2,type="text")
+summary(y2)
 plot(y2)
 
 y3<-lm(Loan_Approved~Black_Hispanic+Black_Not_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
 stargazer(y3,type="text")
 plot(y3)
 
+summary(y3)
+
 y4<-lm(Loan_Approved~Black_Not_Hispanic+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y4)
 stargazer(y4,type="text")
 plot(y4)
 
 
+
 y5<-lm(Loan_Approved~Male+Female+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y5)
 stargazer(y5,type="text")
+
 plot(y5)
 
 y6<- lm(Loan_Approved~Male2+Female2+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y6)
 stargazer(y6,type="text")
 plot(y6)
 
 y7<-lm(Loan_Approved~Male+Female+ I(Male* applicant_income_000s)+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
+summary(y7)
 stargazer(y7,type="text")
 plot(y7)
 
-y8<-lm(Loan_Approved~Male2+Female2+ I(Male2*applicant_income_000s) + applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-stargazer(y8,type="text")
 
 install.packages("car")
 library(car)
@@ -148,9 +158,6 @@ linearHypothesis(y6,c("county_nameBroome County=0","county_nameClinton County=0"
 linearHypothesis(y7,matchCoefs(y7,"county_name"))
 linearHypothesis(y7,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
 
-
-linearHypothesis(y8,matchCoefs(y9,"county_name"))
-linearHypothesis(y8,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
 
 use_varb <- (dfna$minority_population >= 51) 
 use_varb2<-(dfna$minority_population <= 51)
@@ -208,4 +215,4 @@ pred1Logtable2
 goodlogpred2 <- sum((prop.table(pred1Logtable2)[1,1])+(prop.table(pred1Logtable2)[2,2]))
 goodlogpred2
 plot(probit)
-save(dfna,file = "HDMA2017.Rdata")
+
