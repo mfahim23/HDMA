@@ -45,13 +45,13 @@ boxplot(dfna$applicant_income_000s)$out
 # Now you can assign the outliers values into a vector
 outliers<-boxplot(dfna$applicant_income_000s,plot=FALSE)$out
 # Check the results
-#print(outliers)
+print(outliers)
 # First you need find in which rows the outliers are
-```
+dfna[which(dfna$applicant_income_000s %in% outliers),]```
 
 
 ```{r echo=TRUE}
-dfna[which(dfna$applicant_income_000s %in% outliers),]
+
 # Now you can remove the rows containing the outliers, one possible option is:
 dfna <- dfna[-which(dfna$applicant_income_000s %in% outliers),]
 #If you check now with boxplot, you will notice that those pesky outliers are gone
