@@ -6,7 +6,6 @@ output:
   html_document:
     df_print: paged
 ---
-https://rpubs.com/mirajulfahim8/705952
 
 ```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -18,7 +17,7 @@ x<-read.csv("/Users/mirajulfahim/Downloads/ecob2000_lecture1/Econometrics Projec
 
 ```
 
-```{r}
+```{r include=FALSE}
 dat2 <- x[-c(1,4,5,7,9,11,13,16,18,21:23,26,28,30,32:40,42:50,52,54,57,59:64,66,68:71,78)]
 
 dat3<- subset(dat2, select =c(property_type_name, loan_purpose_name, owner_occupancy_name ,loan_amount_000s, preapproval_name, action_taken_name, msamd_name, county_name, applicant_ethnicity_name, co_applicant_ethnicity_name, applicant_race_name_1,applicant_race_name_1, applicant_sex_name, co_applicant_sex_name, applicant_income_000s, purchaser_type_name, denial_reason_name_1 , hoepa_status_name, lien_status_name ,population, minority_population ,hud_median_family_income , number_of_owner_occupied_units, number_of_1_to_4_family_units))
@@ -28,15 +27,12 @@ dfna <- dat3[complete.cases(dat3), ] # Omit NAs by columns
  
 ```
 
-```{r}
+```{r include=FALSE}
 attach(dfna)
 
-library(VIM)
-VIM::aggr(dfna)
-VIM::aggr(dat3)
 ```
 
-```{r}
+```{r include=FALSE}
 # Now we have a look at $applicant_income_000s column of the dfna dataset with boxplot
 boxplot(dfna$applicant_income_000s)
 # You can get the actual values of the outliers with this
@@ -46,17 +42,14 @@ outliers<-boxplot(dfna$applicant_income_000s,plot=FALSE)$out
 # Check the results
 #print(outliers)
 # First you need find in which rows the outliers are
-dfna[which(dfna$applicant_income_000s %in% outliers),]
 # Now you can remove the rows containing the outliers, one possible option is:
 dfna <- dfna[-which(dfna$applicant_income_000s %in% outliers),]
 #If you check now with boxplot, you will notice that those pesky outliers are gone
-boxplot(dfna$applicant_income_000s)
 
-summary(dfna$applicant_income_000s)
 
 ```
 
-```{r}
+```{r include=FALSE}
 dfna$Hispanic_or_Latino <- ifelse(dfna$applicant_ethnicity_name == 'Hispanic or Latino', 1, 0)
 dfna$Not_Hispanic_or_Latino<- ifelse(dfna$applicant_ethnicity_name == 'Not Hispanic or Latino', 1, 0)
 
@@ -96,68 +89,11 @@ dfna$Black_Not_Hispanic <-ifelse(dfna$Merged_Race_Ethnicity=='Black or African A
 dfna$Black_Hispanic<-ifelse(dfna$Merged_Race_Ethnicity=='Black or African American Hispanic or Latino',1,0)
 ```
 
-```{r}
+
+```{r echo=TRUE}
+
 library(stargazer)
 
-y<-lm(Loan_Approved~White_Hispanic+Black_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-
-
-
-y2<-lm(Loan_Approved~White_Hispanic+White_Not_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-
-
-
-y3<-lm(Loan_Approved~Black_Hispanic+Black_Not_Hispanic +applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-
-
-
-
-y4<-lm(Loan_Approved~Black_Not_Hispanic+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-
-
-
-
-y5<-lm(Loan_Approved~Male+Female+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-
-
-y6<- lm(Loan_Approved~Male2+Female2+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-
-
-y7<-lm(Loan_Approved~Male+Female+ I(Male* applicant_income_000s)+applicant_income_000s + loan_purpose_name + county_name + minority_population,data=dfna)
-```
-
-```{r}
-library(car)
-linearHypothesis(y,matchCoefs(y,"county_name"))
-linearHypothesis(y,c("Black_Hispanic=0","county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-linearHypothesis(y,c("Black_Hispanic")) 
-
-
-linearHypothesis(y2,matchCoefs(y2,"county_name"))
-linearHypothesis(y2,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-
-
-linearHypothesis(y3,matchCoefs(y3,"county_name"))
-linearHypothesis(y3,c("Black_Hispanic=0","county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-linearHypothesis(y3,c("Black_Hispanic=0")) 
-
-linearHypothesis(y4,matchCoefs(y4,"county_name"))
-linearHypothesis(y4,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-
-linearHypothesis(y5,matchCoefs(y5,"county_name"))
-linearHypothesis(y5,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-
-
-linearHypothesis(y6,matchCoefs(y6,"county_name"))
-linearHypothesis(y6,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-
-linearHypothesis(y7,matchCoefs(y7,"county_name"))
-linearHypothesis(y7,c("county_nameBroome County=0","county_nameClinton County=0"  ,"county_nameFranklin County=0","county_nameHamilton County=0","county_nameOrleans County=0","county_nameSaratoga County =0","county_nameSchenectady County=0" , "county_nameSt. Lawrence County=0" ,"county_nameUlster County=0" ,"county_nameWarren County=0"))
-
-```
-
-
-```{r}
 use_varb <- (dfna$minority_population >= 51) 
 use_varb2<-(dfna$minority_population <= 51)
 majorityneighborhoods <- subset(dfna,use_varb)
@@ -165,55 +101,9 @@ minorityneighborhoods<-subset(dfna,use_varb2)
 
 x<-lm(Loan_Approved~minority_population,data=minorityneighborhoods)
 x2<-lm(Loan_Approved~minority_population,data=majorityneighborhoods)
-```
-
-```{r}
-require(standardize)
-set.seed(654321)
-NN<- length(dfna$Loan_Approved)
-NN
-restrict_1 <-as.logical(runif(NN)<0.20)
-summary(restrict_1)
-dat_train<-subset(dfna,restrict_1)
-dat_test<- subset(dfna,!restrict_1)
-sobj<- standardize(Loan_Approved~Black+ Asian + American_Indian_or_Alaska_Native + White + Male + Female + applicant_income_000s +loan_purpose_name +county_name + minority_population,dat_train,family=binomial)
-s_dat_test<-predict(sobj,dat_test)
-summary(s_dat_test)
-
-```
-
-```{r}
-linear <- lm(sobj$formula, data = sobj$data)
-pred_vals_OLS <- suppressWarnings(predict(linear, s_dat_test))
-pred_model_OLS1 <- (pred_vals_OLS > 0.45)
-pred1OLStable <- table(pred = pred_model_OLS1, true = dat_test$Loan_Approved)
-pred1OLStable
-goodolspred <- sum((prop.table(pred1OLStable)[1,1])+(prop.table(pred1OLStable)[2,2]))
-goodolspred
-summary(linear)
-```
-
-```{r}
-logit <- glm(sobj$formula, family = binomial, data = sobj$data)
-summary(logit)
-pred_vals <- suppressWarnings(predict(logit, s_dat_test, type = "response"))
-pred_model_logit1 <- (pred_vals > 0.5)
-pred1Logtable <- table(pred = pred_model_logit1, true = dat_test$Loan_Approved)
-pred1Logtable
-goodlogpred <- sum((prop.table(pred1Logtable)[1,1])+(prop.table(pred1Logtable)[2,2]))
-goodlogpred
-summary(logit)
-```
-
-```{r}
-probit <- glm(sobj$formula, family = binomial (link='probit'), data = sobj$data)
-summary(probit)
-pred_vals2 <- suppressWarnings(predict(probit, s_dat_test, type = "response"))
-pred_model_probit1 <- (pred_vals2 > 0.5)
-pred1Logtable2 <- table(pred = pred_model_probit1, true = dat_test$Loan_Approved)
-pred1Logtable2
-goodlogpred2 <- sum((prop.table(pred1Logtable2)[1,1])+(prop.table(pred1Logtable2)[2,2]))
-goodlogpred2
-summary(probit)
+stargazer(x)
+stargazer(x2)
+plot(x)
+plot(x2)
 ```
 
