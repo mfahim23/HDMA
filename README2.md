@@ -35,6 +35,7 @@ attach(dfna)
 library(VIM)
 VIM::aggr(dfna)
 VIM::aggr(dat3)
+
 ```
 
 ```{r echo=TRUE}
